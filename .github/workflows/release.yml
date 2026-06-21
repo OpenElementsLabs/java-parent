@@ -61,10 +61,10 @@ jobs:
         # distributionManagement points at GitHub Packages, so we override
         # the deploy target to the local staging directory configured in the
         # JReleaser <stagingRepositories> block (target/staging-deploy).
-        run: ./mvnw -B -Ppublication clean deploy -DaltDeploymentRepository=local::file:./target/staging-deploy
+        run: ./mvnw -B -Pfull-build clean deploy -DaltDeploymentRepository=local::file:./target/staging-deploy
 
       - name: Publish with JReleaser
-        run: ./mvnw -B -Ppublication jreleaser:full-release -N
+        run: ./mvnw -B -Pdeploy-release jreleaser:full-release -N
         env:
           JRELEASER_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
           JRELEASER_GPG_PUBLIC_KEY: ${{ secrets.GPG_PUBLIC_KEY }}
