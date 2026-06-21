@@ -41,8 +41,8 @@
         <maven.compiler.target>21</maven.compiler.target>
 
         <!-- Release: GitHub repo coordinates used by the deploy-release profile.
-     Defaults assume the GitHub repo name equals the Maven artifactId;
-     a child project overrides release.github.repo (or .owner) when it differs. -->
+             Defaults assume the GitHub repo name equals the Maven artifactId;
+             a child project overrides release.github.repo (or .owner) when it differs. -->
         <release.github.owner>OpenElementsLabs</release.github.owner>
         <release.github.repo>${project.artifactId}</release.github.repo>
 
