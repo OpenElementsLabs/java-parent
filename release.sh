@@ -1,6 +1,11 @@
 #!/bin/bash
 set -e  # Exit the script if any command fails
 
+# Cuts a release by setting the version, tagging, and pushing.
+# Pushing the tag (vA.B.C) triggers .github/workflows/release.yml, which
+# builds, signs, and deploys to Maven Central and creates the GitHub
+# release. This script only prepares git state; it does NOT deploy.
+
 if [ -z "$1" ]; then
   echo "Please provide version that should be released and the next snapshot version. Example: ./release.sh 0.1.0 0.2.0-SNAPSHOT"
   exit 1
@@ -24,13 +29,72 @@ fi
 NEW_VERSION="$1"
 NEXT_VERSION="$2"
 
+# Best-effort: generate release/upgrade documentation with Claude Code.
+# Requires the `claude` CLI (Claude Code) on this machine. Documentation is a
+# "nice to have" for the release, not a gate: if the CLI is missing or the run
+# fails, we log a warning and continue so a doc problem never blocks a release.
+generate_release_doc() {
+  if ! command -v claude >/dev/null 2>&1; then
+    echo "WARNING: 'claude' CLI not found; skipping release documentation."
+    echo "         Install Claude Code to auto-generate docs/releases/ on release."
+    return 0
+  fi
+  echo "Generating release documentation for v$NEW_VERSION with Claude Code..."
+  # Runs headless (-p). The /release-doc skill reads git history (Bash) and
+  # writes the doc into docs/releases/, so we allow exactly those tools and
+  # auto-accept edits — no interactive prompt is possible in a script.
+  if claude -p "/release-doc v$NEW_VERSION" \
+      --permission-mode acceptEdits \
+      --allowedTools "Bash Read Write Edit Glob Grep"; then
+    echo "Release documentation generated under docs/releases/."
+  else
+    echo "WARNING: release documentation generation failed; continuing release."
+  fi
+}
+
 echo "Releasing version $NEW_VERSION"
 ./mvnw versions:set -DnewVersion=$NEW_VERSION
-./mvnw clean verify
+
+# Build and test locally so we never push a tag that fails CI.
+#
+# Use the SAME profile the release workflow uses (-Ppublication) and run through
+# the `package` phase via `verify`. That triggers the publication-only executions
+# — Javadoc jar, sources jar and the CycloneDX SBOM — so a broken @link, a missing
+# source attachment, or an SBOM failure breaks HERE, locally, instead of after the
+# tag is already pushed and the release workflow is running.
+#
+# Safe to run without release secrets: the GPG signing and JReleaser deploy steps
+# are only *configured* in the publication profile, not bound to a Maven phase, so
+# `verify` does not sign or deploy anything — it just builds the artifacts the
+# release will later sign and publish.
+#
+# This runs BEFORE the release doc is generated on purpose: if the build fails,
+# `set -e` aborts the script here and we never spend AI tokens documenting a
+# release that was never cut.
+./mvnw -Ppublication clean verify
+
+# Generate the release doc only after a green build, but still before committing
+# so it ships inside the release commit (and therefore the v$NEW_VERSION tag).
+# The version is already set in the build file, so the skill derives the correct
+# version delta.
+generate_release_doc
+
+# `commit -am` only stages modified tracked files, but the release doc is a NEW
+# (untracked) file — and its exact path depends on the project's convention
+# (this repo uses docs/upgrade-to-X.Y.md, others use docs/releases/vX.Y.md). Stage
+# the whole docs/ tree so the freshly generated doc is included regardless of its
+# name or sub-directory (guarded — docs/ should exist, but never block the release
+# if it doesn't).
+git add docs 2>/dev/null || true
 git commit -am "Version $NEW_VERSION"
 git push
-./mvnw -Pfull-build -Pdeploy-parent deploy -DaltDeploymentRepository=local::file:./target/staging-deploy
-./mvnw -Pfull-build -Pdeploy-parent jreleaser:full-release
+
+# Tag and push. The vA.B.C tag triggers the release workflow that deploys
+# to Maven Central and creates the GitHub release.
+echo "Tagging v$NEW_VERSION (this triggers the release workflow)"
+git tag "v$NEW_VERSION"
+git push origin "v$NEW_VERSION"
+
 echo "Setting version to $NEXT_VERSION"
 ./mvnw versions:set -DnewVersion=$NEXT_VERSION
 git commit -am "Version $NEXT_VERSION"
