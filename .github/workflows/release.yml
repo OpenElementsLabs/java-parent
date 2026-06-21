@@ -19,6 +19,7 @@ jobs:
 
     permissions:
       contents: write # JReleaser needs this to create the GitHub release
+      issues: write # JReleaser queries/closes the release milestone (Issues API)
 
     steps:
       - name: Checkout Code
