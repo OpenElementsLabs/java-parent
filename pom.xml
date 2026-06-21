@@ -40,6 +40,12 @@
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
 
+        <!-- Release: GitHub repo coordinates used by the deploy-release profile.
+     Defaults assume the GitHub repo name equals the Maven artifactId;
+     a child project overrides release.github.repo (or .owner) when it differs. -->
+        <release.github.owner>OpenElementsLabs</release.github.owner>
+        <release.github.repo>${project.artifactId}</release.github.repo>
+
         <!-- Plugin versions -->
         <maven-resources-plugin.version>3.5.0</maven-resources-plugin.version>
         <maven-compiler-plugin.version>3.15.0</maven-compiler-plugin.version>
@@ -310,8 +316,8 @@
                                 </deploy>
                                 <release>
                                     <github>
-                                        <owner>OpenElementsLabs</owner>
-                                        <name>java-parent</name>
+                                        <owner>${release.github.owner}</owner>
+                                        <name>${release.github.repo}</name>
                                         <changelog>
                                             <formatted>ALWAYS</formatted>
                                             <preset>conventional-commits</preset>
