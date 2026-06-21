@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bom serialNumber="urn:uuid:b6e46e60-cf5f-3cf0-9dff-6c5b7e8ac10d" version="1" xmlns="http://cyclonedx.org/schema/bom/1.6">
+<bom serialNumber="urn:uuid:3626ec2b-fb1a-3328-bb4a-3fcfeba0f91f" version="1" xmlns="http://cyclonedx.org/schema/bom/1.6">
   <metadata>
-    <timestamp>2026-06-21T22:04:01Z</timestamp>
+    <timestamp>2026-06-21T22:10:22Z</timestamp>
     <lifecycles>
       <lifecycle>
         <phase>build</phase>
@@ -28,17 +28,17 @@
         </component>
       </components>
     </tools>
-    <component type="library" bom-ref="pkg:maven/com.open-elements/java-parent@0.5.0?type=pom">
+    <component type="library" bom-ref="pkg:maven/com.open-elements/java-parent@0.5.1?type=pom">
       <group>com.open-elements</group>
       <name>java-parent</name>
-      <version>0.5.0</version>
+      <version>0.5.1</version>
       <description>Java Parent for projects by Open Elements</description>
       <licenses>
         <license>
           <id>Apache-2.0</id>
         </license>
       </licenses>
-      <purl>pkg:maven/com.open-elements/java-parent@0.5.0?type=pom</purl>
+      <purl>pkg:maven/com.open-elements/java-parent@0.5.1?type=pom</purl>
       <externalReferences>
         <reference type="website">
           <url>https://github.com/OpenElementsLabs/java-parent</url>
@@ -575,7 +575,7 @@
     </component>
   </components>
   <dependencies>
-    <dependency ref="pkg:maven/com.open-elements/java-parent@0.5.0?type=pom">
+    <dependency ref="pkg:maven/com.open-elements/java-parent@0.5.1?type=pom">
       <dependency ref="pkg:maven/io.swagger.core.v3/swagger-annotations-jakarta@2.2.29?type=jar"/>
       <dependency ref="pkg:maven/org.jspecify/jspecify@1.0.0?type=jar"/>
       <dependency ref="pkg:maven/com.slack.api/slack-api-client@1.45.3?type=jar"/>

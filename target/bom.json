@@ -1,10 +1,10 @@
 {
   "bomFormat" : "CycloneDX",
   "specVersion" : "1.6",
-  "serialNumber" : "urn:uuid:b6e46e60-cf5f-3cf0-9dff-6c5b7e8ac10d",
+  "serialNumber" : "urn:uuid:3626ec2b-fb1a-3328-bb4a-3fcfeba0f91f",
   "version" : 1,
   "metadata" : {
-    "timestamp" : "2026-06-21T22:04:01Z",
+    "timestamp" : "2026-06-21T22:10:22Z",
     "lifecycles" : [
       {
         "phase" : "build"
@@ -58,10 +58,10 @@
     },
     "component" : {
       "type" : "library",
-      "bom-ref" : "pkg:maven/com.open-elements/java-parent@0.5.0?type=pom",
+      "bom-ref" : "pkg:maven/com.open-elements/java-parent@0.5.1?type=pom",
       "group" : "com.open-elements",
       "name" : "java-parent",
-      "version" : "0.5.0",
+      "version" : "0.5.1",
       "description" : "Java Parent for projects by Open Elements",
       "licenses" : [
         {
@@ -70,7 +70,7 @@
           }
         }
       ],
-      "purl" : "pkg:maven/com.open-elements/java-parent@0.5.0?type=pom",
+      "purl" : "pkg:maven/com.open-elements/java-parent@0.5.1?type=pom",
       "externalReferences" : [
         {
           "type" : "website",
@@ -1102,7 +1102,7 @@
   ],
   "dependencies" : [
     {
-      "ref" : "pkg:maven/com.open-elements/java-parent@0.5.0?type=pom",
+      "ref" : "pkg:maven/com.open-elements/java-parent@0.5.1?type=pom",
       "dependsOn" : [
         "pkg:maven/io.swagger.core.v3/swagger-annotations-jakarta@2.2.29?type=jar",
         "pkg:maven/org.jspecify/jspecify@1.0.0?type=jar",
