@@ -61,7 +61,17 @@ jobs:
         # distributionManagement points at GitHub Packages, so we override
         # the deploy target to the local staging directory configured in the
         # JReleaser <stagingRepositories> block (target/staging-deploy).
-        run: ./mvnw -B -Pfull-build clean deploy -DaltDeploymentRepository=local::file:./target/staging-deploy
+        #
+        # project.build.outputTimestamp pins every archive/manifest timestamp
+        # to the release commit's committer date (strict ISO-8601 via %cI), so
+        # the same tag always builds byte-identical artifacts (reproducible
+        # builds), independent of when or where the build runs.
+        run: |
+          BUILD_TS=$(git log -1 --format=%cI)
+          echo "Pinning project.build.outputTimestamp to $BUILD_TS"
+          ./mvnw -B -Pfull-build clean deploy \
+            -DaltDeploymentRepository=local::file:./target/staging-deploy \
+            -Dproject.build.outputTimestamp="$BUILD_TS"
 
       - name: Publish with JReleaser
         run: ./mvnw -B -Pdeploy-release jreleaser:full-release -N

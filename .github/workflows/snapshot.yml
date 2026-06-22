@@ -50,7 +50,14 @@ jobs:
         # artifacts to the Central Portal snapshot repo configured in pom.xml.
         # No GPG signing is required for snapshots.
         if: steps.version.outputs.is_snapshot == 'true'
-        run: ./mvnw -B -Pfull-build clean deploy
+        # project.build.outputTimestamp pins every archive/manifest timestamp to
+        # the commit's committer date (strict ISO-8601 via %cI), so the same
+        # commit always builds byte-identical artifacts (reproducible builds),
+        # independent of when or where the build runs.
+        run: |
+          BUILD_TS=$(git log -1 --format=%cI)
+          echo "Pinning project.build.outputTimestamp to $BUILD_TS"
+          ./mvnw -B -Pfull-build clean deploy -Dproject.build.outputTimestamp="$BUILD_TS"
         env:
           MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
