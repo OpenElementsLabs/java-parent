@@ -240,7 +240,8 @@
     <profiles>
         <profile>
             <!-- The full-build profile is used for snapshot and release builds that are deployed / published.
-            It generates a git commit id and other git metadata, attaches javadocs and sources, and generates a CycloneDX SBOM. -->
+            It generates a git commit id and other git metadata, attaches javadocs and sources, and generates a CycloneDX SBOM.
+            Check .github/workflows/snapshot.yml and .github/workflows/release.yml to see how it is used. -->
             <id>full-build</id>
             <build>
                 <defaultGoal>package</defaultGoal>
@@ -350,7 +351,8 @@
         </profile>
         <profile>
             <!-- The deploy-release profile is used for release builds that are deployed to Maven Central and published on GitHub.
-                 It signs artifacts, deploys them to Maven Central, and creates a GitHub release with changelog. -->
+                 It signs artifacts, deploys them to Maven Central, and creates a GitHub release with changelog.
+                 Check .github/workflows/release.yml to see how it is used. -->
             <id>deploy-release</id>
             <build>
                 <defaultGoal>deploy</defaultGoal>
