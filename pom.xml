@@ -67,6 +67,7 @@
         <versions-maven-plugin.version>2.21.0</versions-maven-plugin.version>
         <spotless-maven-plugin.version>3.7.0</spotless-maven-plugin.version>
         <git-commit-id-maven-plugin.version>10.0.0</git-commit-id-maven-plugin.version>
+        <pomchecker-maven-plugin.version>1.14.0</pomchecker-maven-plugin.version>
 
         <!-- Dependency versions -->
         <spring-boot.version>3.5.14</spring-boot.version>
@@ -191,6 +192,11 @@
                     <artifactId>git-commit-id-maven-plugin</artifactId>
                     <version>${git-commit-id-maven-plugin.version}</version>
                 </plugin>
+                <plugin>
+                    <groupId>org.kordamp.maven</groupId>
+                    <artifactId>pomchecker-maven-plugin</artifactId>
+                    <version>${pomchecker-maven-plugin.version}</version>
+                </plugin>
             </plugins>
         </pluginManagement>
 
@@ -244,7 +250,7 @@
             Check .github/workflows/snapshot.yml and .github/workflows/release.yml to see how it is used. -->
             <id>full-build</id>
             <build>
-                <defaultGoal>package</defaultGoal>
+                <defaultGoal>verify</defaultGoal>
                 <plugins>
                     <plugin>
                         <groupId>io.github.git-commit-id</groupId>
@@ -343,6 +349,27 @@
                                 <goals>
                                     <goal>makeBom</goal>
                                 </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <!-- Validates every POM against Maven Central's publishing rules
+                             (url, name, description, licenses, developers, scm, ...) as part
+                             of the build, so a missing required field fails here rather than
+                             later during the JReleaser deploy. SNAPSHOT versions are allowed
+                             (release=false), so this also runs cleanly on snapshot builds. -->
+                        <groupId>org.kordamp.maven</groupId>
+                        <artifactId>pomchecker-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>check-maven-central</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>check-maven-central</goal>
+                                </goals>
+                                <configuration>
+                                    <release>false</release>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
