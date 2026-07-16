@@ -39,6 +39,11 @@
 
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
+        <!-- Emit -parameters so formal parameter names survive into the bytecode. Spring relies on
+             them to resolve constructor/method injection by name (e.g. disambiguating two beans of
+             the same type by parameter name) and to bind @RequestParam/@PathVariable/@ConfigurationProperties
+             without an explicit name. Spring Boot's own parent enables this by default for the same reason. -->
+        <maven.compiler.parameters>true</maven.compiler.parameters>
 
         <!-- Minimum build environment enforced by the maven-enforcer-plugin.
              Child projects may override these to require a newer toolchain. -->
