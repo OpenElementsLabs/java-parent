@@ -39,16 +39,16 @@ No build-time field is introduced
 
 ## Step 2: Remove the command-line timestamp override from both workflows
 
-- [ ] `.github/workflows/release.yml` — drop the `BUILD_TS` computation and the
+- [x] `.github/workflows/release.yml` — drop the `BUILD_TS` computation and the
       `-Dproject.build.outputTimestamp="$BUILD_TS"` argument
-- [ ] `.github/workflows/snapshot.yml` — same
-- [ ] Rewrite both step comments to explain that the timestamp now comes from the POM
+- [x] `.github/workflows/snapshot.yml` — same
+- [x] Rewrite both step comments to explain that the timestamp now comes from the POM
       and that CI deliberately runs the same command a third party runs
 
 **Acceptance criteria:**
-- [ ] `grep -r "outputTimestamp" .github/workflows/` returns no matches
-- [ ] Both workflows still parse as valid YAML
-- [ ] The release build command differs from the documented public command only in
+- [x] `grep -r "outputTimestamp" .github/workflows/` returns no matches
+- [x] Both workflows still parse as valid YAML
+- [x] The release build command differs from the documented public command only in
       deployment arguments
 
 **Related behaviors:** The release workflow builds without a timestamp flag; The
