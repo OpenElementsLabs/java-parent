@@ -60,11 +60,98 @@ builds are reproducible and free of "you should pin this plugin" warnings:
 - **UTF-8** for sources and reporting.
 - **`-parameters`** compiler flag (parameter names retained — useful for
   frameworks like Spring and Jackson).
+- **Reproducible builds** via an inherited `project.build.outputTimestamp`
+  (see [Reproducible builds](#reproducible-builds)).
 - **Code formatting** via Spotless using
   [Google Java Format](https://github.com/google/google-java-format).
 - **Surefire** pre-configured with the `--add-opens` flags commonly needed by
   reflection-based test/mocking libraries.
 - **Toolchain enforcement** (see [Requirements](#requirements)).
+
+## Reproducible builds
+
+Building the same source twice yields **byte-identical artifacts** — jar, sources jar,
+javadoc jar and the CycloneDX SBOM.
+
+This works because `java-parent` declares a fixed timestamp that every child project
+inherits:
+
+```xml
+<properties>
+    <project.build.outputTimestamp>2026-08-28T00:00:00Z</project.build.outputTimestamp>
+</properties>
+```
+
+Child projects **set nothing**. They inherit the value by pinning a `java-parent`
+version, and `release.sh` updates it whenever a new `java-parent` release is cut.
+
+### What is promised
+
+> The same source, built with the **same toolchain**, produces byte-identical artifacts —
+> regardless of when or where the build runs.
+
+"Same toolchain" is part of the promise, not a footnote. Reproducibility across
+*differing* JDK patch versions, Maven versions, operating systems or locales has **not
+been measured** and is not claimed. Javadoc output in particular is known to vary
+between JDK builds. Use the Java and Maven versions this project enforces.
+
+### Verifying a release yourself
+
+No build flags and no insider knowledge are needed. Apart from its deployment
+arguments, this is the same command CI runs:
+
+```bash
+git checkout vA.B.C          # any release that carries the timestamp property
+./mvnw -Pfull-build clean verify
+```
+
+Then compare the result against the artifacts published on Maven Central, for example
+with `sha256sum`. They must match.
+
+> **Do not pass `-Dproject.build.outputTimestamp`, and do not override the property in
+> a child POM.** Both take precedence over the inherited value (`-D` beats a child POM,
+> which beats the parent), so either one silently produces artifacts that nobody else
+> can reproduce.
+
+### The timestamp is not a build time
+
+`project.build.outputTimestamp` records **which `java-parent` release an artifact was
+built against**. It is deliberately not the time the build ran — a real build time
+cannot be reproduced, which is the whole point.
+
+If an application needs to answer *"which state is this?"*, use the Git metadata that
+the `full-build` profile writes into every jar's `META-INF/MANIFEST.MF`:
+
+| Manifest entry | Meaning |
+|----------------|---------|
+| `Git-Commit-Time` | When the source state came into being (UTC, commit-derived) |
+| `Git-Commit` | Abbreviated commit id |
+| `Git-Branch` | Branch the build came from |
+| `Git-Tag` | Tags pointing at the commit |
+| `Git-Dirty` | Whether the working tree had uncommitted changes |
+
+`Git-Commit-Time` is the correct replacement for any `buildTime` / `build.time` field.
+Such a field sourced from `project.build.outputTimestamp` would be misleading and must
+not be introduced.
+
+When the build runs outside a Git checkout — for example from a published source
+archive — these entries are present but **empty**. The build deliberately does not fail
+(`failOnNoGitDirectory` is `false`) so that reproducing from sources stays possible, and
+the empty values are themselves deterministic.
+
+### Known limitations
+
+Tracked in [`docs/TODO.md`](docs/TODO.md):
+
+- No automated check guards reproducibility — a plugin upgrade could reintroduce
+  non-determinism unnoticed.
+- Cross-toolchain reproducibility is unmeasured — see
+  [What is promised](#what-is-promised).
+- Snapshot builds are **not** reproducible, by decision. A project pinning a
+  `-SNAPSHOT` parent inherits a value that moves when the snapshot is republished.
+- A project pinning a `java-parent` version older than the first release carrying the
+  property **inherits nothing** and stays non-reproducible. Raising the parent version
+  is what actually switches this on for a downstream project.
 
 ## Common commands
 
@@ -114,11 +201,16 @@ git state, it never deploys:
 The script:
 
 1. Sets the release version in the POM.
-2. Runs `./mvnw -Pfull-build clean verify` locally — so a broken build, missing
+2. Pins `project.build.outputTimestamp` to the release date and verifies the
+   rewrite took effect — a stale timestamp would publish artifacts that no
+   rebuild could match, so the release aborts rather than continuing.
+3. Runs `./mvnw -Pfull-build clean verify` locally — so a broken build, missing
    Javadoc link, or SBOM error fails **here**, not after the tag is pushed.
-3. Best-effort generates upgrade documentation under `docs/releases/`
+   Because the timestamp is already pinned, these are the bytes CI will publish.
+4. Best-effort generates upgrade documentation under `docs/releases/`
    (requires the Claude Code CLI; skipped with a warning if absent).
-4. Commits, tags `vA.B.C`, pushes, then bumps to the next `-SNAPSHOT`.
+5. Commits version and timestamp together, tags `vA.B.C`, pushes, then bumps to
+   the next `-SNAPSHOT` (leaving the timestamp at the release date).
 
 Pushing the `vA.B.C` tag triggers the release workflow, which verifies the POM
 version matches the tag, stages artifacts, and publishes to Maven Central while
