@@ -97,7 +97,8 @@ between JDK builds. Use the Java and Maven versions this project enforces.
 
 ### Verifying a release yourself
 
-No build flags and no insider knowledge are needed — this is exactly what CI runs:
+No build flags and no insider knowledge are needed. Apart from its deployment
+arguments, this is the same command CI runs:
 
 ```bash
 git checkout vA.B.C          # any release that carries the timestamp property
@@ -144,9 +145,13 @@ Tracked in [`docs/TODO.md`](docs/TODO.md):
 
 - No automated check guards reproducibility — a plugin upgrade could reintroduce
   non-determinism unnoticed.
-- Cross-toolchain reproducibility is unmeasured.
+- Cross-toolchain reproducibility is unmeasured — see
+  [What is promised](#what-is-promised).
 - Snapshot builds are **not** reproducible, by decision. A project pinning a
   `-SNAPSHOT` parent inherits a value that moves when the snapshot is republished.
+- A project pinning a `java-parent` version older than the first release carrying the
+  property **inherits nothing** and stays non-reproducible. Raising the parent version
+  is what actually switches this on for a downstream project.
 
 ## Common commands
 

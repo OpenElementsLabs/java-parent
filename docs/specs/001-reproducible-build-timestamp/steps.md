@@ -148,12 +148,12 @@ scenario is confirmed.
 | A child project builds byte-identically twice | Build | Execution | 5 |
 | The parent's own build is deterministic | Build | Execution | 5 |
 | A child inherits the parent's value without declaring anything | Build | Execution | 1, 5 |
-| A child pinning an older parent is unaffected | Build | Inspection — documents the accepted rollout gap; no change to make | 4 |
+| A child pinning an older parent is unaffected | Build | Inspection — documented as a known limitation in the README | 4 |
 | A command-line override wins over the inherited value | Build | Execution | 5 |
 | A child POM property wins over the inherited value | Build | Execution | 5 |
 | A verifier reproduces a release with no insider knowledge | CI | Inspection — needs a real published release; mechanism verified via Steps 2 and 5 | 2, 5 |
 | A build without a Git directory still succeeds and is stamped | Build | Execution | 5 |
-| Locale and timezone do not affect the stamp | Build | Inspection — the property is an absolute UTC instant; cross-environment measurement is a TODO | 1 |
+| Locale and timezone do not affect the stamp | Build | Execution — measured, `TZ=UTC`/`LANG=C` vs `TZ=Asia/Tokyo`/`LANG=de_DE.UTF-8` | 5 |
 | Cutting a release rewrites the timestamp to the release date | Release | Inspection | 3 |
 | The release commit carries both the version and the timestamp | Release | Inspection | 3 |
 | The timestamp is written before the verification build | Release | Inspection | 3 |
@@ -169,10 +169,9 @@ scenario is confirmed.
 | The README states only the measured claim | Docs | Inspection | 4 |
 | Deferred work is discoverable | Docs | Inspection | 4 |
 
-No scenario is unassigned. Six are confirmed by real measurement in Step 5; the rest
-are configuration or documentation facts confirmed by reading the result. Three
-scenarios describe conditions that cannot be exercised without cutting a real release
-or a differing machine, and say so.
+No scenario is unassigned. Seven are confirmed by real measurement in Step 5; the rest
+are configuration or documentation facts confirmed by reading the result. Two scenarios
+describe conditions that cannot be exercised without cutting a real release, and say so.
 
 ---
 
@@ -204,6 +203,13 @@ Acceptance run on a throwaway fixture project inheriting the modified parent.
 | Build without `.git` succeeds | yes |
 | Build without `.git` carries the same stamp | `08-28-2026 00:00` |
 | Parent's own build — `bom.json` / `bom.xml` | byte-identical |
+
+Timezone and locale independence, measured separately on the same fixture:
+
+| Check | Result |
+|---|---|
+| `TZ=UTC` `LANG=C` vs `TZ=Asia/Tokyo` `LANG=de_DE.UTF-8` — all five artifacts | byte-identical |
+| Archive entry stamp under both | `08-28-2026 00:00` |
 
 Override precedence confirmed as `CLI -D` > child POM > parent POM.
 
