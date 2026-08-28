@@ -59,23 +59,23 @@ command
 
 ## Step 3: Make `release.sh` maintain the timestamp
 
-- [ ] After `versions:set -DnewVersion=$NEW_VERSION`, compute
+- [x] After `versions:set -DnewVersion=$NEW_VERSION`, compute
       `RELEASE_DATE=$(date -u +%Y-%m-%dT00:00:00Z)`
-- [ ] Rewrite the property with
+- [x] Rewrite the property with
       `./mvnw versions:set-property -Dproperty=project.build.outputTimestamp -DnewVersion="$RELEASE_DATE"`
-- [ ] Verify the rewrite actually took effect and abort if it did not — `set-property`
+- [x] Verify the rewrite actually took effect and abort if it did not — `set-property`
       is documented as performing "no sanity checks", so a silent no-op must not pass
       unnoticed
-- [ ] Place both before the local `-Pfull-build clean verify` so the verified bytes
+- [x] Place both before the local `-Pfull-build clean verify` so the verified bytes
       match what CI will publish
-- [ ] Leave the next-`SNAPSHOT` bump untouched
-- [ ] Comment why the value is date-granular and why it is not a build time
+- [x] Leave the next-`SNAPSHOT` bump untouched
+- [x] Comment why the value is date-granular and why it is not a build time
 
 **Acceptance criteria:**
-- [ ] `bash -n release.sh` passes
-- [ ] The timestamp rewrite appears before the verification build in the script
-- [ ] The next-snapshot section contains no timestamp handling
-- [ ] A failed or ineffective rewrite exits non-zero
+- [x] `bash -n release.sh` passes
+- [x] The timestamp rewrite appears before the verification build in the script
+- [x] The next-snapshot section contains no timestamp handling
+- [x] A failed or ineffective rewrite exits non-zero
 
 **Related behaviors:** Cutting a release rewrites the timestamp to the release date;
 The release commit carries both the version and the timestamp; The timestamp is

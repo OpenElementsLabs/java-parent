@@ -55,6 +55,30 @@ generate_release_doc() {
 echo "Releasing version $NEW_VERSION"
 ./mvnw versions:set -DnewVersion=$NEW_VERSION
 
+# Reproducible builds: pin project.build.outputTimestamp to today's UTC date.
+#
+# The value has to be a literal in the POM rather than something CI computes, because
+# an external verifier rebuilding this tag has no way to learn a build flag. It is
+# date-granular on purpose: two releases on the same day share a stamp, which is
+# irrelevant — the value only has to be deterministic, not unique.
+#
+# This runs BEFORE the verification build below, so the bytes verified locally are the
+# bytes CI will publish.
+RELEASE_DATE=$(date -u +%Y-%m-%dT00:00:00Z)
+echo "Pinning project.build.outputTimestamp to $RELEASE_DATE"
+./mvnw versions:set-property -Dproperty=project.build.outputTimestamp -DnewVersion="$RELEASE_DATE"
+
+# versions:set-property does no sanity checking: if the property is absent from the POM
+# it exits 0 and changes nothing, so `set -e` would happily carry on. Verify the value
+# actually landed — otherwise we would tag and publish a release carrying a stale
+# timestamp, and every later rebuild of this tag would disagree with Maven Central.
+ACTUAL_TS=$(./mvnw help:evaluate -Dexpression=project.build.outputTimestamp -q -DforceStdout)
+if [ "$ACTUAL_TS" != "$RELEASE_DATE" ]; then
+  echo "Error: project.build.outputTimestamp is '$ACTUAL_TS', expected '$RELEASE_DATE'."
+  echo "       It must be declared in pom.xml <properties> for reproducible builds."
+  exit 1
+fi
+
 # Build and test locally so we never push a tag that fails CI.
 #
 # Use the SAME profile the release workflow's build step uses (-Pfull-build) and
@@ -95,6 +119,9 @@ echo "Tagging v$NEW_VERSION (this triggers the release workflow)"
 git tag "v$NEW_VERSION"
 git push origin "v$NEW_VERSION"
 
+# Only the version moves here. project.build.outputTimestamp deliberately keeps the
+# release date, so snapshots built until the next release all carry the same stamp.
+# That is deterministic, and snapshots are not a reproducibility target anyway.
 echo "Setting version to $NEXT_VERSION"
 ./mvnw versions:set -DnewVersion=$NEXT_VERSION
 git commit -am "Version $NEXT_VERSION"
