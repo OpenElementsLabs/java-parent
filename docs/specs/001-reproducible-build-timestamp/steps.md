@@ -87,20 +87,20 @@ rewrite aborts the release
 
 ## Step 4: Document the reproducibility claim in the README
 
-- [ ] Add a **Reproducible builds** section stating the narrow claim: same source plus
+- [x] Add a **Reproducible builds** section stating the narrow claim: same source plus
       same toolchain yields byte-identical artifacts
-- [ ] Document the verification recipe: check out the tag, run
+- [x] Document the verification recipe: check out the tag, run
       `./mvnw -Pfull-build clean verify`, compare against Maven Central
-- [ ] Warn that `-Dproject.build.outputTimestamp` or a child-POM override defeats
+- [x] Warn that `-Dproject.build.outputTimestamp` or a child-POM override defeats
       external verification
-- [ ] Document `Git-Commit-Time` as the deterministic answer to "when did this state
+- [x] Document `Git-Commit-Time` as the deterministic answer to "when did this state
       come into being", and state that the timestamp property is not a build time
-- [ ] Mention the property in the existing "Build conventions" list
+- [x] Mention the property in the existing "Build conventions" list
 
 **Acceptance criteria:**
-- [ ] The README does not claim reproducibility across differing JDK patch versions
-- [ ] The documented public build command matches what CI runs
-- [ ] Links and table formatting render correctly
+- [x] The README does not claim reproducibility across differing JDK patch versions
+- [x] The documented public build command matches what CI runs
+- [x] Links and table formatting render correctly
 
 **Related behaviors:** The README states only the measured claim; Git-Commit-Time
 remains available and distinct; Deferred work is discoverable
