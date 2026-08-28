@@ -21,16 +21,16 @@ honestly in the coverage table rather than claimed as test coverage.
 
 ## Step 1: Pin the build timestamp in the parent POM
 
-- [ ] Add `project.build.outputTimestamp` to `<properties>` in `pom.xml`, seeded with
+- [x] Add `project.build.outputTimestamp` to `<properties>` in `pom.xml`, seeded with
       the current UTC date at midnight (`2026-08-28T00:00:00Z`)
-- [ ] Add a comment explaining that the value is inherited by all children, is
+- [x] Add a comment explaining that the value is inherited by all children, is
       maintained by `release.sh`, and is not a build time
 
 **Acceptance criteria:**
-- [ ] `./mvnw validate` succeeds
-- [ ] `./mvnw help:evaluate -Dexpression=project.build.outputTimestamp -q -DforceStdout`
+- [x] `./mvnw validate` succeeds
+- [x] `./mvnw help:evaluate -Dexpression=project.build.outputTimestamp -q -DforceStdout`
       prints the literal
-- [ ] The value matches `^\d{4}-\d{2}-\d{2}T00:00:00Z$`
+- [x] The value matches `^\d{4}-\d{2}-\d{2}T00:00:00Z$`
 
 **Related behaviors:** A child inherits the parent's value without declaring anything;
 No build-time field is introduced

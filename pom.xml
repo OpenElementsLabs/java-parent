@@ -37,6 +37,17 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
+        <!-- Reproducible builds: a fixed, deterministic timestamp for every archive entry
+             and manifest, inherited by every child project. Because it is a literal in a POM
+             published to Maven Central, and children pin their parent version exactly, a
+             third party can rebuild a release byte-identically with a plain
+             `./mvnw -Pfull-build clean verify`, without knowing any build flag.
+             Maintained by release.sh, which rewrites it on every release.
+             NOTE: this is NOT a build time. It describes the java-parent release an
+             artifact was built against. For "when did this source state come into being",
+             use the Git-Commit-Time manifest entry written by the full-build profile. -->
+        <project.build.outputTimestamp>2026-08-28T00:00:00Z</project.build.outputTimestamp>
+
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <!-- Emit -parameters so formal parameter names survive into the bytecode. Spring relies on
