@@ -72,7 +72,7 @@ echo "Pinning project.build.outputTimestamp to $RELEASE_DATE"
 # it exits 0 and changes nothing, so `set -e` would happily carry on. Verify the value
 # actually landed — otherwise we would tag and publish a release carrying a stale
 # timestamp, and every later rebuild of this tag would disagree with Maven Central.
-ACTUAL_TS=$(./mvnw help:evaluate -Dexpression=project.build.outputTimestamp -q -DforceStdout)
+ACTUAL_TS=$(./mvnw -B help:evaluate -Dexpression=project.build.outputTimestamp -q -DforceStdout)
 if [ "$ACTUAL_TS" != "$RELEASE_DATE" ]; then
   echo "Error: project.build.outputTimestamp is '$ACTUAL_TS', expected '$RELEASE_DATE'."
   echo "       It must be declared in pom.xml <properties> for reproducible builds."
