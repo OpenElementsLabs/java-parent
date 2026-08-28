@@ -133,6 +133,11 @@ the `full-build` profile writes into every jar's `META-INF/MANIFEST.MF`:
 Such a field sourced from `project.build.outputTimestamp` would be misleading and must
 not be introduced.
 
+When the build runs outside a Git checkout — for example from a published source
+archive — these entries are present but **empty**. The build deliberately does not fail
+(`failOnNoGitDirectory` is `false`) so that reproducing from sources stays possible, and
+the empty values are themselves deterministic.
+
 ### Known limitations
 
 Tracked in [`docs/TODO.md`](docs/TODO.md):

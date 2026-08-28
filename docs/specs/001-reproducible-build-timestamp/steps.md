@@ -109,26 +109,26 @@ remains available and distinct; Deferred work is discoverable
 
 ## Step 5: Acceptance run — measure reproducibility with a fixture child
 
-- [ ] `./mvnw -N install` the modified parent
-- [ ] Create a throwaway child project outside the repository, inheriting the parent,
+- [x] `./mvnw -N install` the modified parent
+- [x] Create a throwaway child project outside the repository, inheriting the parent,
       with one Java source file
-- [ ] Build it twice with `-Pfull-build clean verify`, no flags, with time between runs
-- [ ] Compare jar, sources jar, javadoc jar, `bom.json` and `bom.xml`
-- [ ] Confirm the inherited value appears in the child's archive entries
-- [ ] Confirm a CLI `-D` override and a child-POM property each win over the inherited
+- [x] Build it twice with `-Pfull-build clean verify`, no flags, with time between runs
+- [x] Compare jar, sources jar, javadoc jar, `bom.json` and `bom.xml`
+- [x] Confirm the inherited value appears in the child's archive entries
+- [x] Confirm a CLI `-D` override and a child-POM property each win over the inherited
       value
-- [ ] Confirm a build with no `.git` directory succeeds and is stamped identically
-- [ ] Confirm `Git-Commit-Time` is present in the manifest and independent of the
+- [x] Confirm a build with no `.git` directory succeeds and is stamped identically
+- [x] Confirm `Git-Commit-Time` is present in the manifest and independent of the
       timestamp property
-- [ ] Empirically determine whether `versions:set-property` fails on a missing
+- [x] Empirically determine whether `versions:set-property` fails on a missing
       property; if it does not, confirm the Step 3 guard catches it
-- [ ] Record the measured results for the pull request description
+- [x] Record the measured results for the pull request description
 
 **Acceptance criteria:**
-- [ ] All five artifacts are byte-identical across the two runs
-- [ ] Override precedence is confirmed as `CLI -D` > child POM > parent POM
-- [ ] The no-`.git` build succeeds and produces the same stamp
-- [ ] The throwaway project is removed afterwards and the repository is left clean
+- [x] All five artifacts are byte-identical across the two runs
+- [x] Override precedence is confirmed as `CLI -D` > child POM > parent POM
+- [x] The no-`.git` build succeeds and produces the same stamp
+- [x] The throwaway project is removed afterwards and the repository is left clean
 
 **Related behaviors:** A child project builds byte-identically twice; The parent's own
 build is deterministic; A command-line override wins over the inherited value; A child
@@ -182,3 +182,38 @@ or a differing machine, and say so.
   spec and is not done here.
 - No automated reproducibility check is added — deferred by decision, tracked in
   `docs/TODO.md`.
+
+---
+
+## Step 5 — measured results
+
+Acceptance run on a throwaway fixture project inheriting the modified parent.
+**14 checks, 14 passed, 0 failed.**
+
+| Check | Result |
+|---|---|
+| Two builds, no flags — `fixture-1.0.0.jar` | byte-identical |
+| Two builds, no flags — `fixture-1.0.0-sources.jar` | byte-identical |
+| Two builds, no flags — `fixture-1.0.0-javadoc.jar` | byte-identical |
+| Two builds, no flags — `bom.json` / `bom.xml` | byte-identical |
+| Inherited parent timestamp in archive entries | `08-28-2026 00:00` |
+| `Git-Commit-Time` populated | `2026-08-28T08:01:56Z` |
+| `Git-Commit-Time` distinct from `outputTimestamp` | confirmed |
+| CLI `-D` override wins | `06-07-2030 08:09` |
+| Child POM property wins | `11-12-2015 13:14` |
+| Build without `.git` succeeds | yes |
+| Build without `.git` carries the same stamp | `08-28-2026 00:00` |
+| Parent's own build — `bom.json` / `bom.xml` | byte-identical |
+
+Override precedence confirmed as `CLI -D` > child POM > parent POM.
+
+Two findings the design did not anticipate:
+
+- **`versions:set-property` is a silent no-op** when the property is absent: it exits 0
+  and changes nothing, so `set -e` alone would not have caught a failed rewrite. Step 3
+  therefore re-reads the value and aborts on mismatch. Measured: the guard fires,
+  `help:evaluate` returning `null object or invalid expression`.
+- **Without a Git checkout the `Git-*` manifest entries are present but empty.** The
+  build does not fail, and the empty values are deterministic, so reproducibility is
+  unaffected — but `Git-Commit-Time` is only meaningful for builds from a checkout.
+  Documented in the README.
