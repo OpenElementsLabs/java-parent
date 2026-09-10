@@ -88,8 +88,25 @@
         <!-- Dependency versions -->
         <spring-boot.version>3.5.14</spring-boot.version>
         <testcontainers.version>2.0.5</testcontainers.version>
-        <springdoc.version>2.8.17</springdoc.version>
         <jspecify.version>1.0.0</jspecify.version>
+
+        <!-- OpenAPI stack. These three versions are coupled and MUST be bumped together.
+             springdoc is built against one specific Swagger version, and mixing Swagger
+             versions does not merely downgrade a feature: swagger-core calls annotation
+             members that only exist in its own release, so a split stack throws
+             NoSuchMethodError at runtime.
+             To find the matching values for a new springdoc release, open
+             org/springdoc/springdoc-openapi/<version>/springdoc-openapi-<version>.pom
+             and read <swagger-api.version> and <swagger-ui.version>. They are not
+             exposed by springdoc-openapi-bom, which manages springdoc artifacts only.
+
+             Floor: io.swagger.core.v3:swagger-bom was first published at 2.2.47, so
+             swagger.version cannot go below that. A springdoc release pinned to an
+             older Swagger would need the three jakarta artifacts pinned individually
+             instead of the BOM import. -->
+        <springdoc.version>2.8.17</springdoc.version>
+        <swagger.version>2.2.47</swagger.version>
+        <swagger-ui.version>5.32.2</swagger-ui.version>
     </properties>
 
     <distributionManagement>
@@ -116,10 +133,32 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <!-- OpenAPI stack, kept version-uniform for every child project.
+                 springdoc-openapi-bom manages the springdoc starters and nothing else;
+                 the Swagger versions it is built against are deliberately not part of
+                 that contract, so swagger-bom is imported alongside it. Without the
+                 second import Swagger floats and nearest-wins mediation can split the
+                 stack across incompatible releases. -->
             <dependency>
                 <groupId>org.springdoc</groupId>
-                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                <artifactId>springdoc-openapi-bom</artifactId>
                 <version>${springdoc.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.swagger.core.v3</groupId>
+                <artifactId>swagger-bom</artifactId>
+                <version>${swagger.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- Covered by neither BOM: springdoc pulls the Swagger UI webjar
+                 transitively and its version belongs to the same coupled set. -->
+            <dependency>
+                <groupId>org.webjars</groupId>
+                <artifactId>swagger-ui</artifactId>
+                <version>${swagger-ui.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.jspecify</groupId>
