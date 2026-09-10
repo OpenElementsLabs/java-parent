@@ -156,8 +156,9 @@ Under `1.3.0` it manages the whole coupled stack:
 </dependency>
 ```
 
-with three new overridable properties: `springdoc.version` (`2.8.17`, unchanged),
-`swagger.version` (`2.2.47`) and `swagger-ui.version` (`5.32.2`).
+with two new overridable properties, `swagger.version` (`2.2.47`) and
+`swagger-ui.version` (`5.32.2`), alongside the pre-existing `springdoc.version`
+(still `2.8.17`).
 
 **The bug this fixes.** springdoc declares its Swagger dependency without a version and
 inherits it from its own aggregator POM, so under `1.2.1` Swagger floated and was
@@ -197,8 +198,8 @@ What this means for the consumer:
   the `<version>` so the managed one applies.
 - **A library in the consumer's own reactor compiled against `2.2.29` now runs against
   `2.2.47`.** The change is additive — between those releases the jakarta artifacts
-  gained 8 classes and roughly 90 public or protected members, and lost a single
-  protected method — so this is low risk, but rebuild and test such a module once.
+  gained 8 classes and 89 public or protected members, and lost 1 — so this is low
+  risk, but rebuild and test such a module once.
 
 #### Additive: every springdoc starter is now usable without a version
 
