@@ -86,19 +86,22 @@ external verifier actually needs; deferred with the rest of the verification too
 
 **Prerequisite:** Spec 001.
 
-## Windows line-ending behaviour ships unverified
+## Windows line-ending behaviour is unverified on real Windows
 
 Spec 002 pins `* text=auto eol=lf`, which matters on exactly one platform: Windows,
-where it has to beat the `core.autocrlf=true` default. The mechanism is specified —
-a path-specific `eol` attribute takes precedence over `core.autocrlf` — but nobody
-has observed it here. A `windows-latest` CI job asserting that `git ls-files --eol`
-reports no `w/crlf` outside `*.cmd`/`*.bat` would turn the argument into a
-measurement, at a cost of roughly fifteen lines.
+where it has to beat the `core.autocrlf=true` default. During implementation the
+mechanism was measured — checking files out with `core.autocrlf=true` and with
+`core.eol=crlf` forced still yields LF for text files and CRLF for `*.cmd`, so the
+attribute wins as specified. Git's conversion logic is the same implementation
+everywhere, so this covers the decisive behaviour.
+
+What is still unobserved is the platform itself: no build has run on a real Windows
+machine. A `windows-latest` CI job asserting that `git ls-files --eol` reports no
+`w/crlf` outside `*.cmd`/`*.bat` would close that remainder for roughly fifteen lines.
 
 **Context:** A CI guard was offered during the grill session for spec 002 and
 declined, consistent with spec 001 shipping without automated verification. The
-maintainer develops on macOS and cannot reproduce the case locally.
-
+maintainer develops on macOS.
 ## `claude-base` conventions need two fixes
 
 The org-wide convention documents live in `claude-base` and are vendored into each
