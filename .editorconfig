@@ -1,0 +1,58 @@
+# Open Elements standard EditorConfig.
+# See .claude/skills/project-setup/references/editorconfig.md for the shared baseline.
+# Deviations from that baseline are marked below and explained where they occur.
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+# Deviation from the shared baseline, which specifies 4 spaces and a 120 column limit.
+# This project enforces Spotless with googleJavaFormat for every child project, and
+# Google Java Format writes 2 spaces with a 100 column limit and a 4 space continuation
+# indent. Following the baseline here would make the editor fight the formatter: a
+# developer would type to one rule and the next `spotless:apply` would rewrite it.
+# The ij_java_* rules below are the baseline's and agree with Google Java Format.
+[*.java]
+indent_size = 2
+ij_continuation_indent_size = 4
+max_line_length = 100
+ij_java_class_count_to_use_import_on_demand = 9999
+ij_java_names_count_to_use_import_on_demand = 9999
+ij_java_use_single_class_imports = true
+ij_java_layout_static_imports_separately = true
+ij_java_block_brace_style = end_of_line
+ij_java_class_brace_style = end_of_line
+ij_java_method_brace_style = end_of_line
+ij_java_lambda_brace_style = end_of_line
+ij_java_if_brace_force = always
+ij_java_for_brace_force = always
+ij_java_while_brace_force = always
+ij_java_do_while_brace_force = always
+
+[*.{ts,tsx,js,jsx,json,css,scss,html}]
+indent_size = 2
+
+[*.{yml,yaml}]
+indent_size = 2
+
+# Trailing spaces are significant in Markdown (they encode a line break).
+[*.md]
+trim_trailing_whitespace = false
+
+[*.xml]
+indent_size = 4
+
+# Matches the eol=crlf pin in .gitattributes. Without this the [*] rule above would
+# tell the editor to write LF, and every save would fight the checkout.
+[*.{cmd,bat}]
+end_of_line = crlf
+
+[{Dockerfile,Dockerfile.*}]
+indent_style = space
+indent_size = 4

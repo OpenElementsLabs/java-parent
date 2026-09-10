@@ -221,6 +221,13 @@
                 <groupId>com.diffplug.spotless</groupId>
                 <artifactId>spotless-maven-plugin</artifactId>
                 <configuration>
+                    <!-- Spotless defaults to GIT_ATTRIBUTES, so in a child project without its own
+                         .gitattributes it writes whatever the local core.autocrlf implies - CRLF on
+                         a Windows default install. UNIX makes the formatter's output independent of
+                         the developer's platform and Git configuration for every inheriting project.
+                         This does not make a child's sources jar LF-clean on its own; that still
+                         requires the child to carry a .gitattributes (see README). -->
+                    <lineEndings>UNIX</lineEndings>
                     <java>
                         <googleJavaFormat/>
                     </java>

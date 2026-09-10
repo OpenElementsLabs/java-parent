@@ -1,0 +1,37 @@
+# Line endings are pinned so a checkout produces the same bytes on every platform.
+#
+# Git always stores text files with LF in the index; `eol=lf` additionally forces LF
+# in the working tree, overriding a local `core.autocrlf` (Windows default: true).
+# Without this, the bytes of every source and resource file would depend on the Git
+# configuration of whoever checked the repository out — including the bytes of this
+# project's own pom.xml, which is deployed to Maven Central verbatim.
+*               text=auto eol=lf
+
+# Windows batch files are the single exception: cmd.exe is fragile with LF-only
+# scripts (labels, goto, multi-line blocks), so these are checked out as CRLF.
+# The index representation stays LF, so this produces no commit diff.
+*.bat           text eol=crlf
+*.cmd           text eol=crlf
+
+# Truly binary files: never normalized, never diffed as text. Git's content
+# heuristic already classifies the assets currently in this repository correctly;
+# these markers remove the dependency on that heuristic for future additions —
+# keystores and archives being the cases where a misdetection would corrupt a file.
+# Listing a type here says how Git must treat it if it ever appears — it is not a
+# statement that such a file belongs in version control. Keystores generally do not.
+*.class         binary
+*.eot           binary
+*.gif           binary
+*.gz            binary
+*.ico           binary
+*.jar           binary
+*.jks           binary
+*.jpeg          binary
+*.jpg           binary
+*.p12           binary
+*.pdf           binary
+*.png           binary
+*.ttf           binary
+*.woff          binary
+*.woff2         binary
+*.zip           binary

@@ -67,6 +67,81 @@ builds are reproducible and free of "you should pin this plugin" warnings:
 - **Surefire** pre-configured with the `--add-opens` flags commonly needed by
   reflection-based test/mocking libraries.
 - **Toolchain enforcement** (see [Requirements](#requirements)).
+- **LF line endings** enforced for the formatter, so `spotless:apply` never
+  writes CRLF (see [Line endings](#line-endings)).
+
+## Line endings
+
+This repository pins line endings, and it does so for a concrete reason: with
+`packaging=pom` and no `flatten-maven-plugin`, its `pom.xml` is deployed to Maven
+Central **verbatim**. Checked out on a machine with `core.autocrlf=true` — the
+Windows default — every text file arrives with CRLF, and the published `.pom` would
+differ from one built elsewhere. For a project with Java sources the same variance
+lands in the sources jar and in every copied resource.
+
+`.gitattributes` forces LF in the working tree on every platform, overriding whatever
+`core.autocrlf` or `core.eol` the developer has set. Windows batch files are the
+single exception, because `cmd.exe` is fragile with LF-only scripts. `.editorconfig`
+mirrors the same rules for editors.
+
+This eliminates line endings as a source of byte-level variance. It does **not** by
+itself make builds reproducible across operating systems — that involves further
+variables and is not claimed here.
+
+### What child projects need to do
+
+Git attributes are repository-local: Maven inheritance cannot deliver them. A child
+project inherits the Spotless setting below, but must carry its own `.gitattributes`.
+Copy this file into the repository root:
+
+```gitattributes
+# Force LF in the working tree on every platform, overriding local core.autocrlf.
+*               text=auto eol=lf
+
+# Windows batch files are the exception: cmd.exe is fragile with LF-only scripts.
+*.bat           text eol=crlf
+*.cmd           text eol=crlf
+
+# Truly binary files: never normalized, never diffed as text.
+*.class         binary
+*.eot           binary
+*.gif           binary
+*.gz            binary
+*.ico           binary
+*.jar           binary
+*.jks           binary
+*.jpeg          binary
+*.jpg           binary
+*.p12           binary
+*.pdf           binary
+*.png           binary
+*.ttf           binary
+*.woff          binary
+*.woff2         binary
+*.zip           binary
+```
+
+Then run `git add --renormalize .` once and commit whatever it stages. In a
+repository that never received CRLF this is a no-op.
+
+Take this project's [`.editorconfig`](.editorconfig) along with it. Its `[*.java]`
+block is set to 2 spaces and a 100 column limit, matching the Google Java Format
+this parent enforces via Spotless — a `.editorconfig` specifying anything else makes
+the editor fight the formatter on every save. The `[*.{cmd,bat}]` block keeps editors
+in agreement with the CRLF pin above.
+
+### What the parent enforces on its own
+
+The parent sets `<lineEndings>UNIX</lineEndings>` on the Spotless plugin, which every
+child inherits. Spotless defaults to `GIT_ATTRIBUTES`, so without this a
+`spotless:apply` run on a Windows machine in a repository lacking `.gitattributes`
+would actively write CRLF into Java sources.
+
+The reach of that setting is narrow, and worth stating plainly: it applies only to
+files Spotless formats, and only when `spotless:apply` or `spotless:check` is invoked
+— neither is bound to a lifecycle phase. It guarantees the mandated formatter never
+*introduces* CRLF. It does not make a child's sources jar LF-clean; only the child's
+own `.gitattributes` does that.
 
 ## Reproducible builds
 

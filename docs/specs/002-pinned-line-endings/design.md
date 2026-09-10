@@ -230,13 +230,25 @@ sequenceDiagram
     Note over G: index stays platform-independent
 ```
 
-## Consequence: the Windows promise is argued, not measured
+## Consequence: the Windows mechanism is measured, the Windows platform is not
 
-`eol=lf` was chosen specifically for Windows, and no automated check verifies it. The
-mechanism is well-specified — a path-specific `eol` attribute takes precedence over
-`core.autocrlf` — but the behaviour ships untested against a real Windows runner,
-which was a deliberate decision. The gap is recorded in `docs/TODO.md` so the
-distinction between *specified* and *observed* stays visible.
+`eol=lf` was chosen specifically for Windows, and no CI guard verifies it. The
+decisive mechanism was however measured during implementation, by checking files out
+of the index with the offending configurations forced on:
+
+| Configuration forced | `crlf.java` | `probe.cmd` |
+|---|---|---|
+| `core.autocrlf=true` (Windows default) | LF | CRLF |
+| `core.eol=crlf` | LF | CRLF |
+| `core.autocrlf=false` | LF | CRLF |
+
+The path-specific `eol` attribute wins in every case, which is the entire behaviour
+the design depends on. Since Git's conversion logic is the same implementation on
+every platform, this is stronger evidence than the specification alone.
+
+What remains untested is the platform, not the mechanism: no build has run on a real
+Windows machine, so editor behaviour, filesystem effects and the Git for Windows
+installer defaults are unobserved. That residual gap is recorded in `docs/TODO.md`.
 
 ## Acceptance
 
@@ -247,6 +259,9 @@ There is no automated check, by decision. Acceptance before merge is:
 3. `git check-attr text eol -- pom.xml mvnw mvnw.cmd .claude/skills/…/Lato-Regular.ttf`
    reports `eol=lf` for the first two, `eol=crlf` for `mvnw.cmd`, and `-text` for the
    font.
+3a. Probe files confirm the conversion behaviour: a CRLF-authored `.java`, `.cmd`,
+   `.md` and `.toml` all land as `i/lf` in the index; a file without line endings
+   stays `i/none`; an explicitly marked `.p12` is stored byte-identical to disk.
 4. `./mvnw clean verify` passes.
 5. `./mvnw spotless:check` passes (no Java sources here, but the configuration must
    parse — an invalid `lineEndings` value fails the plugin).
