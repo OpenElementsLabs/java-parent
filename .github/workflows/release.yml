@@ -62,16 +62,15 @@ jobs:
         # the deploy target to the local staging directory configured in the
         # JReleaser <stagingRepositories> block (target/staging-deploy).
         #
-        # project.build.outputTimestamp pins every archive/manifest timestamp
-        # to the release commit's committer date (strict ISO-8601 via %cI), so
-        # the same tag always builds byte-identical artifacts (reproducible
-        # builds), independent of when or where the build runs.
+        # Deliberately NO -Dproject.build.outputTimestamp here. The timestamp is a
+        # fixed literal in pom.xml, inherited by every child project. A build flag
+        # would be invisible to anyone outside this organisation, so an external
+        # verifier checking out this tag could never reproduce the published bytes.
+        # Apart from the deployment arguments, this is exactly the command the
+        # README tells a third party to run.
         run: |
-          BUILD_TS=$(git log -1 --format=%cI)
-          echo "Pinning project.build.outputTimestamp to $BUILD_TS"
           ./mvnw -B -Pfull-build clean deploy \
-            -DaltDeploymentRepository=local::file:./target/staging-deploy \
-            -Dproject.build.outputTimestamp="$BUILD_TS"
+            -DaltDeploymentRepository=local::file:./target/staging-deploy
 
       - name: Publish with JReleaser
         run: ./mvnw -B -Pdeploy-release jreleaser:full-release -N
