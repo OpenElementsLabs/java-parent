@@ -44,6 +44,62 @@ Import-scoped BOMs so child projects can declare these dependencies **without a
 
 - **Spring Boot** — `spring-boot-dependencies` (`3.5.14`)
 - **Testcontainers** — `testcontainers-bom` (`2.0.5`)
+- **OpenAPI** — `springdoc-openapi-bom` (`2.8.17`) and `swagger-bom` (`2.2.47`),
+  plus `org.webjars:swagger-ui` (`5.32.2`) — see
+  [The OpenAPI stack](#the-openapi-stack)
+
+### The OpenAPI stack
+
+springdoc, Swagger and the Swagger UI webjar are **one coupled set**, and the parent
+manages all three so a child gets a version-uniform stack without configuring
+anything.
+
+This is not tidiness. springdoc declares its Swagger dependency without a version and
+inherits it from its own aggregator POM, so Swagger floats in every consuming project
+and is decided by nearest-wins mediation. A library that uses only the Swagger
+annotations declares only that artifact — the normal thing to do — and its
+declaration sits closer to the application than the `swagger-core-jakarta` springdoc
+contributes two levels down. The stack then splits along exactly that boundary, and
+Swagger's own modules call each other across incompatible releases:
+
+```
+io.swagger.v3.core.jackson.ModelResolver        (swagger-core-jakarta 2.2.47)
+  → io.swagger.v3.oas.annotations.media.Schema.$dynamicRef()
+                                                 absent in annotations 2.2.29
+```
+
+The result is a `NoSuchMethodError` at schema resolution, not a missing feature.
+Managing the versions in the parent removes the mediation entirely, because
+`dependencyManagement` is consulted before nearest-wins and applies at any depth.
+
+**What this does not cover.** Management overrides *transitive* resolution only. A
+project that declares a Swagger artifact directly with an explicit `<version>` still
+wins over the managed version and keeps whatever it had. Dropping that `<version>`
+activates the managed one.
+
+**Retargeting the stack in a child.** Setting `<swagger.version>` in a child moves all
+14 Swagger coordinates at once. The floor is `2.2.47`: `swagger-bom` was first
+published at that version, so a lower value fails the build with a non-resolvable
+import. Use a direct declaration with a `<version>` to pull an older Swagger.
+
+#### Maintenance: bump the three together
+
+`springdoc.version`, `swagger.version` and `swagger-ui.version` **must** move
+together. Bumping springdoc alone would publish a split stack to every child project
+at once, and this parent's own build would not notice — it has no Java sources and
+never exercises the stack.
+
+The matching values are not exposed by `springdoc-openapi-bom`, which manages
+springdoc artifacts only. Read them from springdoc's aggregator POM:
+
+```
+org/springdoc/springdoc-openapi/<version>/springdoc-openapi-<version>.pom
+  <swagger-api.version>   → swagger.version
+  <swagger-ui.version>    → swagger-ui.version
+```
+
+For reference: springdoc `2.8.6` pairs with Swagger `2.2.29` and Swagger UI `5.20.1`;
+springdoc `2.8.17` pairs with `2.2.47` and `5.32.2`.
 
 ### Pinned plugin versions
 

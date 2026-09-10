@@ -192,6 +192,15 @@ silently fails to cover it and the split-stack failure returns in a new place. T
 BOM is published by the Swagger project, covers all 14 artifacts, and has no parent
 POM of its own, so importing it drags nothing else in.
 
+**Constraint discovered during implementation:** `swagger-bom` was first published at
+**2.2.47** — every earlier version returns 404 on Maven Central, and the published
+range is 2.2.47 through 2.2.55. The version this change needs is therefore the very
+first one that has a BOM at all. Two consequences follow. A future springdoc release
+pinned to a Swagger older than 2.2.47 could not use the import and would need the
+three jakarta artifacts pinned individually. And a child overriding `swagger.version`
+below 2.2.47 gets a hard model-building failure rather than an override — declaring
+the artifact directly with a version remains available and unaffected.
+
 **Rationale — importing `springdoc-openapi-bom` even though it does not fix the bug.**
 It manages only springdoc's own artifacts and says nothing about Swagger, so it
 contributes nothing to the failure at hand. It is imported because the parent
@@ -257,6 +266,12 @@ The rule is written where someone would otherwise break it, in two places:
   version chosen for springdoc compatibility. Tracked in `docs/TODO.md`.
 - **Children that hard-pin Swagger themselves are unaffected**, silently. Their direct
   declaration still wins, so they keep whatever they had and see no error and no fix.
+  Measured on a probe child: a direct `swagger-annotations-jakarta` 2.2.29 declaration
+  keeps the split stack even with the fix in place.
+- **`swagger.version` has a floor of 2.2.47.** The BOM does not exist below that, so
+  overriding the property downwards fails the build at model-building time with a
+  non-resolvable import. The error is explicit rather than silent, but it is a new
+  way for a child to break that did not exist before.
 
 ## Acceptance
 

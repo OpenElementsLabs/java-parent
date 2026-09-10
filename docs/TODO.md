@@ -133,9 +133,14 @@ JAX-RS artifacts are pinned for every child as a side effect — at a version se
 for springdoc compatibility, not for that child. It is silent: the build succeeds
 either way.
 
+Measured during the implementation of spec 003, so this is confirmed rather than
+suspected: a probe child declaring `swagger-annotations` (the javax artifact) and
+`swagger-jaxrs2-jakarta` without versions resolves both to 2.2.47.
+
 Worth deciding whether that is wanted. The alternatives are pinning only the three
 jakarta artifacts by hand (an artifact list that goes stale when springdoc adds a
-Swagger module) or leaving it as is and documenting the reach.
+Swagger module, and which would also sidestep the 2.2.47 floor that `swagger-bom`
+imposes) or leaving it as is and documenting the reach.
 
 **Context:** Identified while choosing between `swagger-bom` and hand-written pins
 during spec 003; the wider reach was accepted to avoid maintaining an artifact list.
