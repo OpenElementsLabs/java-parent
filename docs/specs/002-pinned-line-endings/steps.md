@@ -91,8 +91,10 @@ child can still override the setting · The configuration is validated by the bu
 - [x] The copy-paste block matches the repository's own `.gitattributes`
 - [x] No promise is made that the parent delivers `.gitattributes` to children
 
-**Related behaviors:** The lockstep between editor and Git is documented (supporting
-Java formatting agrees with the formatter)
+**Related behaviors:** No scenario in `behaviors.md` describes README content
+directly. This step supports *Java formatting agrees with the formatter* and
+*Formatting on Windows without a child `.gitattributes`*, both of which depend on a
+child project actually receiving the two files.
 
 ---
 
@@ -114,33 +116,35 @@ Java formatting agrees with the formatter)
 
 ## Behavior Coverage
 
-23 scenarios. Layer is "Repo/Build" throughout — there is no application code.
+23 scenarios. Layer is "Repo/Build" throughout — there is no application code, so the
+executable form of a scenario is a Git or Maven command rather than a JUnit case.
 
-| Scenario | Verifiable here | Covered in Step |
+| Scenario | Verification | Step |
 |---|---|---|
-| Text file on a Windows default installation | No — Windows only | 1 (attribute asserted) |
-| Extensionless text file | Partly — attribute asserted | 1 |
-| Windows batch file | Partly — attribute asserted | 1 |
-| Unix checkout is unchanged | Yes | 1 |
-| Local Git configuration cannot override the pin | Yes — `core.autocrlf` override test | 1 |
-| Binary assets are untouched | Yes | 1 |
-| A file authored with CRLF is normalized | Yes — CRLF probe file | 1 |
-| A batch file authored with CRLF is normalized in the index | Yes — CRLF probe file | 1 |
-| A binary file is committed verbatim | Yes | 1 |
-| Renormalization changes nothing | Yes | 1, 5 |
-| The existing working tree stays valid | Yes | 1 |
-| Java formatting agrees with the formatter | Yes — by inspection, no Java sources here | 2 |
-| Editor and Git agree on batch files | Yes — by inspection | 2 |
-| Formatting on Windows without a child `.gitattributes` | No — needs a child project | 3 (config asserted) |
-| A child can still override the setting | No — needs a child project | 3 |
-| The configuration is validated by the build | Yes | 3 |
-| The deployed POM does not depend on the build platform | No — needs two platforms | 1 (follows from the attribute) |
-| A new text file type nobody thought about | Yes — probe file | 1 |
-| A new binary type covered by an explicit marker | Yes — probe file | 1 |
-| A new binary type not covered by any marker | Yes — documented residual risk | 1 |
-| A file with mixed line endings | Yes — probe file | 1 |
-| A file with no line endings at all | Yes | 1 |
-| Weakening the attributes silently restores the old behaviour | No — regression, unguarded by decision | 5 (documented) |
+| Text file on a Windows default installation | Measured — `core.autocrlf=true` forced on checkout yields LF | 1 |
+| Extensionless text file | Attribute asserted for `mvnw` and `.sdkmanrc` | 1 |
+| Windows batch file | Measured — CRLF under `autocrlf=true`, `autocrlf=false` and `core.eol=crlf` | 1 |
+| Unix checkout is unchanged | Measured — clean tree, no renormalization | 1 |
+| Local Git configuration cannot override the pin | Measured — `autocrlf=true` and `core.eol=crlf` both lose | 1 |
+| Binary assets are untouched | Measured — `.p12` blob byte-identical, `.ttf` reports `-text` | 1 |
+| A file authored with CRLF is normalized | Measured — CRLF probe lands as `i/lf` | 1 |
+| A batch file authored with CRLF is normalized in the index | Measured — `i/lf` with `attr/text eol=crlf` | 1 |
+| A binary file is committed verbatim | Measured | 1 |
+| Renormalization changes nothing | Measured — no tracked file staged | 1, 5 |
+| The existing working tree stays valid | Measured — `mvnw.cmd` not reported modified | 1 |
+| Java formatting agrees with the formatter | By inspection — no Java sources in this repository | 2 |
+| Editor and Git agree on batch files | By inspection — `[*.{cmd,bat}]` matches `eol=crlf` | 2 |
+| Formatting on Windows without a child `.gitattributes` | Not verifiable here — needs a child project | 3 |
+| A child can still override the setting | Not verifiable here — needs a child project | 3 |
+| The configuration is validated by the build | Measured — `spotless:check` exits 0 | 3 |
+| The deployed POM does not depend on the build platform | Follows from the measured checkout behaviour; not directly compared across platforms | 1 |
+| A new text file type nobody thought about | Measured — `.toml` probe lands as `i/lf` | 1 |
+| A new binary type covered by an explicit marker | Measured — `.p12` probe | 1 |
+| A new binary type not covered by any marker | Not verifiable — documented residual risk | 1 |
+| A file with mixed line endings | Measured — mixed probe lands as `i/lf` | 1 |
+| A file with no line endings at all | Measured — stays `i/none` | 1 |
+| Weakening the attributes silently restores the old behaviour | Not guarded, by decision | 5 |
 
-Scenarios marked "No" are the Windows- and child-project-dependent ones the design
-accepted as unverified; both gaps are recorded in `docs/TODO.md`.
+**16 measured, 2 by inspection, 5 not verifiable in this repository.** The five gaps
+need either a child project or a real Windows machine; both are recorded in
+`docs/TODO.md`.

@@ -122,6 +122,12 @@ Copy this file into the repository root:
 Then run `git add --renormalize .` once and commit whatever it stages. In a
 repository that never received CRLF this is a no-op.
 
+Take this project's [`.editorconfig`](.editorconfig) along with it. Its `[*.java]`
+block is set to 2 spaces and a 100 column limit, matching the Google Java Format
+this parent enforces via Spotless — a `.editorconfig` specifying anything else makes
+the editor fight the formatter on every save. The `[*.{cmd,bat}]` block keeps editors
+in agreement with the CRLF pin above.
+
 ### What the parent enforces on its own
 
 The parent sets `<lineEndings>UNIX</lineEndings>` on the Spotless plugin, which every

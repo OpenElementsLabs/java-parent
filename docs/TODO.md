@@ -175,3 +175,18 @@ and the library should be rebuilt and tested once against 2.2.47.
 
 **Prerequisite:** Spec 003 released as a `java-parent` version.
 
+## The project has no `CLAUDE.md`
+
+`/spec-implement` treats updating the Project Context sections of `CLAUDE.md`
+(Features, Tech Stack, Structure, Architecture) as a mandatory closing step of every
+spec. This repository has no `CLAUDE.md` at all, so that step has silently done
+nothing for specs 001 and 002 and will keep doing nothing.
+
+Creating one means describing the whole project, not the slice a single spec touched
+— `/project-analyze` is the tool for it. Worth doing once, after which the per-spec
+update step becomes meaningful.
+
+**Context:** Surfaced during the quality review for spec 002; deliberately not done
+inside that spec, because generating whole-project documentation is not part of
+pinning line endings.
+

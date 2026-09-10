@@ -17,6 +17,8 @@
 # heuristic already classifies the assets currently in this repository correctly;
 # these markers remove the dependency on that heuristic for future additions —
 # keystores and archives being the cases where a misdetection would corrupt a file.
+# Listing a type here says how Git must treat it if it ever appears — it is not a
+# statement that such a file belongs in version control. Keystores generally do not.
 *.class         binary
 *.eot           binary
 *.gif           binary
