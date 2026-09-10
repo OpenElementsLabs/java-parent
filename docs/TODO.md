@@ -56,16 +56,9 @@ its own CI, since either defeats external verification.
 
 **Prerequisite:** Spec 001 released as a `java-parent` version.
 
-## Line endings are not pinned
+## ~~Line endings are not pinned~~
 
-The repository has neither `.gitattributes` nor `.editorconfig`. Source files checked
-out on Windows can carry CRLF, which changes the bytes inside a published sources jar
-and breaks reproducibility for anyone building on a differently configured machine.
-Add `.gitattributes` enforcing LF for source and resource files, plus a matching
-`.editorconfig`, and consider recommending both to child projects.
-
-**Context:** Identified while auditing the parent against the
-`reproducible-builds-check` skill during spec 001; out of the chosen scope.
+Promoted to spec [`002-pinned-line-endings`](specs/002-pinned-line-endings/design.md).
 
 ## Release builds do not reject SNAPSHOT or ranged dependencies
 
@@ -92,3 +85,90 @@ check mechanically.
 external verifier actually needs; deferred with the rest of the verification tooling.
 
 **Prerequisite:** Spec 001.
+
+## Windows line-ending behaviour ships unverified
+
+Spec 002 pins `* text=auto eol=lf`, which matters on exactly one platform: Windows,
+where it has to beat the `core.autocrlf=true` default. The mechanism is specified —
+a path-specific `eol` attribute takes precedence over `core.autocrlf` — but nobody
+has observed it here. A `windows-latest` CI job asserting that `git ls-files --eol`
+reports no `w/crlf` outside `*.cmd`/`*.bat` would turn the argument into a
+measurement, at a cost of roughly fifteen lines.
+
+**Context:** A CI guard was offered during the grill session for spec 002 and
+declined, consistent with spec 001 shipping without automated verification. The
+maintainer develops on macOS and cannot reproduce the case locally.
+
+## `claude-base` conventions need two fixes
+
+The org-wide convention documents live in `claude-base` and are vendored into each
+repository under `.claude/skills/`. Two problems surfaced while writing spec 002, and
+both must be fixed at the source rather than in the vendored copy, which would drift:
+
+1. **`.gitattributes` is not a documented requirement.** `references/repo-setup.md`
+   makes `.editorconfig` mandatory and never mentions `.gitattributes`. Empirically
+   1 of 26 Open Elements repositories has one. The block from spec 002 is a ready
+   template.
+2. **The standard `.editorconfig` contradicts Google Java Format.**
+   `references/editorconfig.md` specifies `indent_size = 4` globally and
+   `max_line_length = 120` for `[*.java]`, while `googleJavaFormat` — which
+   `java-parent` enforces via Spotless for every child — formats with 2 spaces and
+   100 columns. Any Java project following both gets an IDE that fights the
+   formatter. Spec 002 corrects the block locally; the standard itself is still
+   wrong.
+
+**Context:** Both identified during the grill session for spec 002 and deliberately
+kept out of that spec, because editing the vendored skill copies creates drift
+against `claude-base`.
+
+## `swagger-bom` pins the javax and JAX-RS Swagger line too
+
+Spec 003 imports `io.swagger.core.v3:swagger-bom` to keep the jakarta trio
+(`swagger-annotations-jakarta`, `swagger-models-jakarta`, `swagger-core-jakarta`)
+uniform. The BOM manages all 14 Swagger coordinates, so the non-jakarta line and the
+JAX-RS artifacts are pinned for every child as a side effect — at a version selected
+for springdoc compatibility, not for that child. It is silent: the build succeeds
+either way.
+
+Worth deciding whether that is wanted. The alternatives are pinning only the three
+jakarta artifacts by hand (an artifact list that goes stale when springdoc adds a
+Swagger module) or leaving it as is and documenting the reach.
+
+**Context:** Identified while choosing between `swagger-bom` and hand-written pins
+during spec 003; the wider reach was accepted to avoid maintaining an artifact list.
+
+## The springdoc/Swagger lockstep is documented, not enforced
+
+Spec 003 couples three version properties — `springdoc.version`, `swagger.version`,
+`swagger-ui.version` — that must always be bumped together, and enforces this with a
+comment and a README section. Nothing checks it. Bumping springdoc alone would
+publish a split Swagger stack to every child at once, and the parent's own build
+would not notice, because it has no Java sources and never exercises the stack.
+
+Two ways out, both rejected in spec 003 for stated reasons: import
+`org.springdoc:springdoc-openapi` (the aggregator) as a BOM so one property pulls the
+whole consistent set — rejected because it is springdoc's internal build structure
+rather than a published contract, and it also manages jjwt, scalar and
+spring-cloud-function — or add a check that reads `<swagger-api.version>` from the
+springdoc POM being used and fails when the parent disagrees.
+
+**Context:** Raised during the discussion for spec 003 and accepted as a documented
+maintenance rule; this entry records the residual risk.
+
+## Downstream: libraries pinning Swagger directly are not fixed
+
+Spec 003 fixes the case where a library *transitively* contributes an old Swagger
+version. It cannot fix a project that declares a Swagger artifact **directly with an
+explicit version** — a direct declaration beats `dependencyManagement`. Those
+projects keep whatever they had, silently, and see neither the error nor the fix.
+
+`spring-services-core` is the known case: it pins `swagger-annotations-jakarta`
+2.2.29 and is the source of the mediation conflict that motivated spec 003. Dropping
+that pin in favour of the managed version would remove the conflict at its origin,
+and the library should be rebuilt and tested once against 2.2.47.
+
+**Context:** Surfaced while establishing the precise reach of parent-level
+`dependencyManagement` during spec 003.
+
+**Prerequisite:** Spec 003 released as a `java-parent` version.
+
