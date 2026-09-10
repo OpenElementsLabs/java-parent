@@ -88,11 +88,22 @@ is managed. "Consumer" means a project whose parent is `java-parent`.
 
 ### A consumer may still override deliberately
 
-- **Given** a consumer that declares its own `swagger.version` property or its own
-  `dependencyManagement` entry for a Swagger artifact
+- **Given** a consumer that declares its own `swagger.version` property
 - **When** the project resolves its dependencies
-- **Then** the consumer's value wins, because a child's `dependencyManagement` takes
-  precedence over the inherited one
+- **Then** the whole Swagger stack moves to that version, because property
+  interpolation happens in the child's effective POM and therefore reaches the
+  parent's BOM import
+- **And** one property in the child retargets all 14 coordinates at once
+
+### Overriding the Swagger version below 2.2.47 fails the build
+
+- **Given** a consumer that sets `swagger.version` to a release older than 2.2.47
+- **When** the project is built
+- **Then** the build fails at model-building time with a non-resolvable import POM,
+  because `io.swagger.core.v3:swagger-bom` was first published at 2.2.47
+- **And** the failure is explicit rather than silent
+- **And** declaring the artifact directly with a `<version>` is unaffected and remains
+  the way to use an older Swagger
 
 ## Side effects
 
@@ -115,8 +126,9 @@ is managed. "Consumer" means a project whose parent is `java-parent`.
 
 - **Given** the parent's existing `spring-boot-dependencies` 3.5.14 import
 - **When** the effective POM is computed
-- **Then** no coordinate is managed by both, because Spring Boot manages no
-  `io.swagger`, `org.springdoc` or `org.webjars:swagger-ui` entry
+- **Then** no coordinate is managed by both: `spring-boot-dependencies` 3.5.14
+  contains no `io.swagger` and no `org.springdoc` entry at all, and its only
+  `org.webjars` entries are `webjars-locator-core` and `webjars-locator-lite`
 - **And** the relative order of the imports has no effect on the resolved versions
 
 ## Maintenance
