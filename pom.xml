@@ -4,7 +4,7 @@
 
     <groupId>com.open-elements</groupId>
     <artifactId>java-parent</artifactId>
-    <version>1.4.0-SNAPSHOT</version>
+    <version>2.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Java Parent</name>
@@ -48,8 +48,8 @@
              use the Git-Commit-Time manifest entry written by the full-build profile. -->
         <project.build.outputTimestamp>2026-09-10T17:19:06Z</project.build.outputTimestamp>
 
-        <maven.compiler.source>21</maven.compiler.source>
-        <maven.compiler.target>21</maven.compiler.target>
+        <maven.compiler.source>25</maven.compiler.source>
+        <maven.compiler.target>25</maven.compiler.target>
         <!-- Emit -parameters so formal parameter names survive into the bytecode. Spring relies on
              them to resolve constructor/method injection by name (e.g. disambiguating two beans of
              the same type by parameter name) and to bind @RequestParam/@PathVariable/@ConfigurationProperties
@@ -59,7 +59,7 @@
         <!-- Minimum build environment enforced by the maven-enforcer-plugin.
              Child projects may override these to require a newer toolchain. -->
         <enforcer.requiredMavenVersion>3.9.11</enforcer.requiredMavenVersion>
-        <enforcer.requiredJavaVersion>21</enforcer.requiredJavaVersion>
+        <enforcer.requiredJavaVersion>25</enforcer.requiredJavaVersion>
 
         <!-- Release: GitHub repo coordinates used by the deploy-release profile.
              Defaults assume the GitHub repo name equals the Maven artifactId;
@@ -86,9 +86,13 @@
         <pomchecker-maven-plugin.version>1.14.0</pomchecker-maven-plugin.version>
 
         <!-- Dependency versions -->
-        <spring-boot.version>3.5.14</spring-boot.version>
+        <!-- The Spring Boot major defines the java-parent major: 2.x manages Boot 4,
+             1.x manages Boot 3.5. A Boot major upgrade is a new java-parent major. -->
+        <spring-boot.version>4.1.2</spring-boot.version>
         <testcontainers.version>2.0.5</testcontainers.version>
-        <jspecify.version>1.0.0</jspecify.version>
+        <!-- Keep at or above the version spring-boot-dependencies manages: the explicit
+             entry below wins over the imported BOM and would otherwise downgrade it. -->
+        <jspecify.version>1.0.1</jspecify.version>
 
         <!-- OpenAPI stack. These three versions are coupled and MUST be bumped together.
              springdoc is built against one specific Swagger version, and mixing Swagger
@@ -104,9 +108,9 @@
              swagger.version cannot go below that. A springdoc release pinned to an
              older Swagger would need the three jakarta artifacts pinned individually
              instead of the BOM import. -->
-        <springdoc.version>2.8.17</springdoc.version>
-        <swagger.version>2.2.47</swagger.version>
-        <swagger-ui.version>5.32.2</swagger-ui.version>
+        <springdoc.version>3.2.0</springdoc.version>
+        <swagger.version>2.2.55</swagger.version>
+        <swagger-ui.version>5.34.0</swagger-ui.version>
     </properties>
 
     <distributionManagement>
