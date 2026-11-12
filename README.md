@@ -13,18 +13,37 @@ boilerplate into every project.
 <parent>
     <groupId>com.open-elements</groupId>
     <artifactId>java-parent</artifactId>
-    <version>1.0.0</version>
+    <version>2.0.0</version>
 </parent>
 ```
 
 Released artifacts are published to [Maven Central](https://central.sonatype.com/artifact/com.open-elements/java-parent);
 `-SNAPSHOT` builds are published to the Central Portal snapshot repository.
 
+### Version lines
+
+The Spring Boot major version defines the `java-parent` major version:
+
+| `java-parent` | Spring Boot | Java |
+|---------------|-------------|------|
+| 2.x           | 4.1         | 25   |
+| 1.x           | 3.5         | 21   |
+
+Projects that stay on Spring Boot 3.5 keep using 1.x. Upgrading to 2.x means moving
+to Spring Boot 4 and Java 25 at the same time; the parent makes the Java baseline
+decision, child projects do not set `maven.compiler.*` themselves.
+
+Applications that use springdoc get **Jackson 2 next to Jackson 3** at runtime:
+`swagger-core` (used by springdoc 3.2.0) still depends on
+`com.fasterxml.jackson.core:jackson-databind`, while Spring Boot 4 uses Jackson 3
+(`tools.jackson`). Projects that use only `swagger-annotations-jakarta` are not
+affected — it has no dependencies.
+
 ## Requirements
 
 | Tool  | Version    | Enforced by                                                   |
 |-------|------------|--------------------------------------------------------------|
-| Java  | 21         | `maven-enforcer-plugin` (`requireJavaVersion`)               |
+| Java  | 25         | `maven-enforcer-plugin` (`requireJavaVersion`)               |
 | Maven | 3.9.11+    | `maven-enforcer-plugin` (`requireMavenVersion`) + wrapper    |
 
 The build fails fast in the `validate` phase if the local toolchain does not
@@ -42,10 +61,10 @@ installation is required.
 Import-scoped BOMs so child projects can declare these dependencies **without a
 `<version>`**:
 
-- **Spring Boot** — `spring-boot-dependencies` (`3.5.14`)
+- **Spring Boot** — `spring-boot-dependencies` (`4.1.2`)
 - **Testcontainers** — `testcontainers-bom` (`2.0.5`)
-- **OpenAPI** — `springdoc-openapi-bom` (`2.8.17`) and `swagger-bom` (`2.2.47`),
-  plus `org.webjars:swagger-ui` (`5.32.2`) — see
+- **OpenAPI** — `springdoc-openapi-bom` (`3.2.0`) and `swagger-bom` (`2.2.55`),
+  plus `org.webjars:swagger-ui` (`5.34.0`) — see
   [The OpenAPI stack](#the-openapi-stack)
 
 ### The OpenAPI stack
@@ -99,7 +118,8 @@ org/springdoc/springdoc-openapi/<version>/springdoc-openapi-<version>.pom
 ```
 
 For reference: springdoc `2.8.6` pairs with Swagger `2.2.29` and Swagger UI `5.20.1`;
-springdoc `2.8.17` pairs with `2.2.47` and `5.32.2`.
+springdoc `2.8.17` pairs with `2.2.47` and `5.32.2` (Spring Boot 3, `java-parent` 1.x);
+springdoc `3.2.0` pairs with `2.2.55` and `5.34.0` (Spring Boot 4, `java-parent` 2.x).
 
 ### Pinned plugin versions
 
@@ -112,7 +132,7 @@ builds are reproducible and free of "you should pin this plugin" warnings:
 
 ### Build conventions
 
-- **Java 21**, source/target via `maven.compiler.*`.
+- **Java 25**, source/target via `maven.compiler.*`.
 - **UTF-8** for sources and reporting.
 - **`-parameters`** compiler flag (parameter names retained — useful for
   frameworks like Spring and Jackson).
